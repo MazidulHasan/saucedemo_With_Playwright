@@ -2,7 +2,7 @@ import { test, expect } from './fixtures/authFixture.js';
 import excelReader from '../utils/excelReader.js';
 import logger from '../helpers/logger.js';
 
-test.describe('Shopping Cart Functionality @smoke', () => {
+test.describe('Shopping Cart Functionality with login @smoke', () => {
     test('should display product in cart page', async ({ authenticatedPage }) => {
         const { dashboardPage, cartPage } = authenticatedPage;
         // adde the comment resolver 1
