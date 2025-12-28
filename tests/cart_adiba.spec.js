@@ -32,4 +32,4 @@ test('test', async ({ page }) => {
   await expect(quantity).toContainText('1');
   await expect(product).toContainText('Sauce Labs Bolt T-Shirt');
 
-});
+}); 
