@@ -1,7 +1,7 @@
 // spec: specs/cart-page-test-plan.md
 // seed: tests/MCP/seed.spec.js
 
-import { test, expect } from './fixtures/authFixture.js';
+import { test, expect } from '../fixtures/authFixture.js';
 
 test.describe('Cart Page - Basic Operations', () => {
   test('Cart Badge and Item Count Accuracy', async ({ authenticatedPage }) => {
