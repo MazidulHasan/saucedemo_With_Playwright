@@ -7,58 +7,77 @@ import CheckoutInfo from '../pages/naveed_page/CheckoutInfo.js';
 import CheckoutOverview from '../pages/naveed_page/CheckoutOverview.js';
 import CheckoutComplete from '../pages/naveed_page/CheckoutComplete.js';
 
+test.describe('Product Order', () => {
+    let login;
+    let dashBoadrd;
+    let cartPg;
+    let checkOutIn;
+    let checkOutOver;
+    let checkOutComp;
 
-test('Product Order', async({page}) => {
-    const login = new LoginPage(page);
-    const dashBoadrd = new DashboardPage(page);
-    const cartPg = new CartPage(page);
-    const checkOutIn = new CheckoutInfo(page);
-    const checkOutOver = new CheckoutOverview(page);
-    const checkOutComp = new CheckoutComplete(page);
-    const removeBtn = page.locator('[data-test="remove-sauce-labs-fleece-jacket"]');
+    test.beforeEach(async ({ page }) => {
+        login = new LoginPage(page);
+        dashBoadrd = new DashboardPage(page);
+        cartPg = new CartPage(page);
+        checkOutIn = new CheckoutInfo(page);
+        checkOutOver = new CheckoutOverview(page);
+        checkOutComp = new CheckoutComplete(page);
+    });
 
+    test('Product Ordering Process', async({page}) => {
+        const removeBtn = page.locator('[data-test="remove-sauce-labs-fleece-jacket"]');
 
-    const loginData = excelReader.getLoginCredentials(0);
-    const { username, password } = loginData;
+        const loginData = excelReader.getLoginCredentials(0);
+        const { username, password } = loginData;
 
-    const productData = excelReader.getProductByIndex(3);
-    const product = productData.productName;
+        const productData = excelReader.getProductByIndex(3);
+        const product = productData.productName;
+        const price = productData.price;
 
-    const data = "Dummy Data"
-    const text = "Total: $53.99"
-    const th_text = "Thank you for your order!";
+        const firstName = "First Name";
+        const lastName = "Last Name";
+        const postalCode = "1A1A1A";
+        const totalPrice_amount = "Total: $53.99"
+        const thankYou_text = "Thank you for your order!";
 
-    //Log in
-    await login.navigateToLoginPage();
-    await login.doLogin(username, password);
-    await dashBoadrd.isOnDashboard();
+        await test.step('Login to Application', async () => {
+            await login.navigateToLoginPage();
+            await login.doLogin(username, password);
+            await dashBoadrd.isOnDashboard();
+        });
 
-    // Dashboard Page & add to cart
-    await dashBoadrd.isProductDisplayed(product);
-    await dashBoadrd.addProductToCartByName(product);
-    await expect(removeBtn).toContainText('Remove');
-    await dashBoadrd.verifyCartBadgeCount(1);
-    await dashBoadrd.clickCartIcon();
+        await test.step('Dashboard Page & add to cart', async () => {
+            await dashBoadrd.isProductDisplayed(product);
+            await dashBoadrd.addProductToCartByName(product);
+            await expect(removeBtn).toContainText('Remove');
+            await dashBoadrd.verifyCartBadgeCount(1);
+            await dashBoadrd.clickCartIcon();
+        });
 
-    //Cart Page & checkout
-    await cartPg.verifyCartPageVisible();
-    await cartPg.getProductDetails(product);
-    await cartPg.clickCheckout();
+        await test.step('Cart Page & checkout', async () => {
+            await cartPg.verifyCartPageVisible();
+            await cartPg.getProductDetails(product);
+            await cartPg.clickCheckout();
+        });
 
-    //Checkout info page
-    await checkOutIn.checkOutInformation(data);
-    await checkOutIn.clickContinueBtn();
+        await test.step('Checkout info page', async () => {
+            await checkOutIn.FillUpcheckOutInformation(firstName, lastName, postalCode);
+            await checkOutIn.clickContinueBtn();
+        });
 
-    //Checkout overview page
-    await checkOutOver.getProductDetails(product);
-    await checkOutOver.totalPrc(text);
-    await checkOutOver.clickOnFinishBtn();
+        await test.step('Checkout overview page', async () => {        
+            await checkOutOver.getProductDetails(product, price);
+            await checkOutOver.totalPrc(totalPrice_amount);
+            await checkOutOver.clickOnFinishBtn();
+        });
 
-    //Checkout complete
-    await checkOutComp.checkoutCompletePage(th_text);
-    
-    //Post conditions
-    await dashBoadrd.verifyDashboardVisible();
-    await dashBoadrd.verifyCartBadgeCount(0);
+        await test.step('Checkout complete', async () => {        
+            await checkOutComp.checkoutCompletePage(thankYou_text);
+        });
 
+        await test.step('Post conditions', async () => {        
+            await dashBoadrd.verifyDashboardVisible();
+            await dashBoadrd.verifyCartBadgeCount(0);
+        });
+    });
 });

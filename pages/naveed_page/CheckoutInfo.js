@@ -7,10 +7,10 @@ export default class CheckoutInfo{
         this.continueBtn = page.locator('[data-test="continue"]');
     }
 
-    async checkOutInformation(data){
-        await this.firstName.fill(data);
-        await this.lastName.fill(data);
-        await this.postCode.fill(data);
+    async FillUpcheckOutInformation(firstName, lastName, postalCode){
+        await this.firstName.fill(firstName);
+        await this.lastName.fill(lastName);
+        await this.postCode.fill(postalCode);
     }
 
     async clickContinueBtn(){
