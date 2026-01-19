@@ -45,14 +45,8 @@ test.describe('POM-Task Tests', () => {
         await login.doLogin(credentials.username, credentials.password);
         const product = excelReader.getProductByName('Sauce Labs Fleece Jacket');
 
-        
-        const isDashboardVisible = await dashboard.verifyDashboardVisible();
-        if(isDashboardVisible){
-            const isProductDisplayed = await dashboard.isProductDisplayed(product.productName);
-            expect(isProductDisplayed).toBeTruthy();
-        }else{
-            expect(isDashboardVisible).toBeTruthy();
-        }
+        const isProductDisplayed = await dashboard.isProductDisplayed(product.productName);
+        expect(isProductDisplayed).toBeTruthy();
     });
 
     test('Add Product to Cart', async() =>{

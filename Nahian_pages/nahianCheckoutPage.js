@@ -1,4 +1,4 @@
-import BasePage from '../pages/BasePage.js';
+import BasePage from './nahianBasePage.js';
 
 /**
  * CheckoutPage - Page Object for SauceDemo Checkout flow
@@ -41,7 +41,7 @@ export default class CheckoutPage extends BasePage {
     
     async verifyCheckOutInfoPageVisible() {
         try {
-            await this.waitForElement(this.locators.checkoutInfoForm, 10000);
+            await this.waitForElement(this.locators.checkoutInfoForm);
             const titleVisible = await this.isVisible(this.locators.pageTitle);
             if (titleVisible) {
                 this.logger.pass('Checkout: Your Information page is visible and loaded');
@@ -66,13 +66,14 @@ export default class CheckoutPage extends BasePage {
             this.logger.pass('Checkout information submitted');
         } catch (error) {
             this.logger.fail(`Failed to fill checkout info: ${error.message}`);
+            await this.takeScreenshot(`Checkout-Info_Fill-error-${Date.now()}`);
             throw error;
         }
     }
 
     async verifySummaryFormVisible(){
         try {
-            await this.waitForElement(this.locators.checkoutSummaryContainer, 10000);
+            await this.waitForElement(this.locators.checkoutSummaryContainer);
             const titleVisible = await this.isVisible(this.locators.pageTitle);
             if (titleVisible) {
                 this.logger.pass('Checkout: Overview page is visible and loaded');
