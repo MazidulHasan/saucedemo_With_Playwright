@@ -1,4 +1,4 @@
-import { readExcel } from "../utils/excelReader.js";
+import { readExcel } from "../utils/fixtures/excelReader";
 
 export function buildExcelProjects() {
   const data = readExcel("./testdata/loginData.xlsx", "Sheet1");

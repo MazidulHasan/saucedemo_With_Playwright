@@ -1,6 +1,12 @@
-import { multitest, expect } from "../utils/fixtures/data.fixture";
+import { multitest, expect } from "../utils/fixtures/data.fixture.js";
+import { readExcel } from "../utils/fixtures/excelReader.js";
+import path from "path";
 
-multitest("Test Case Number 1", async ({ page, testData }) => {
+// Read Excel inside spec
+const excelData = readExcel(path.join(process.cwd(), "testdata", "loginData.xlsx"), "Sheet1");
+
+// Generate tests dynamically for group 1
+multitest("Test Case Number 1", excelData, async ({ page, testData }) => {
 
   await page.goto("https://www.saucedemo.com/");
 
@@ -9,7 +15,7 @@ multitest("Test Case Number 1", async ({ page, testData }) => {
   await page.click("#login-button");
 
   if (testData.expected === "success") {
-    await expect(page).toHaveURL(/inventory.html/);
+    await expect(page).toHaveURL("/inventory.html");
   } else {
     await expect(page.locator("[data-test='error']")).toBeVisible();
   }

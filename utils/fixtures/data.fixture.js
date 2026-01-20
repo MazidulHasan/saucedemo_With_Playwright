@@ -1,23 +1,23 @@
 import { test as base, expect } from "@playwright/test";
 
-export const multitest = (title, fn) => {
+/**
+ * multitest: generates multiple tests from Excel data
+ * @param {string} title - group title, e.g., "Test Case Number 1"
+ * @param {Array} testDataArray - array of data objects
+ * @param {Function} fn - test function: ({ page, testData }) => {}
+ */
+export const multitest = (title, testDataArray, fn) => {
+  const group = title.match(/\d+/)[0]; // "Test Case Number 1" → 1
 
-  base(title, async ({ testData, ...fixtures }) => {
+  testDataArray.forEach((row) => {
+    const currentCase = row.caseNo.toString();
 
-    // Extract group number from title
-    // "Test Case Number 1" → 1
-    const group = title.match(/\d+/)[0];
-    const currentCase = testData.caseNo.toString();
+    // Only run rows that belong to this group
+    if (!currentCase.startsWith(group)) return;
 
-    // Only run if:
-    // 1     → 1
-    // 1.1   → 1
-    // 1.2   → 1
-    if (!currentCase.startsWith(group)) {
-      base.skip(true, `Skipping case ${currentCase}, not in group ${group}`);
-    }
-
-    await fn({ testData, ...fixtures });
+    base(`${title} - ${currentCase}`, async ({ page }) => {
+      await fn({ page, testData: row });
+    });
   });
 };
 
