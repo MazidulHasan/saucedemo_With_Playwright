@@ -16,7 +16,10 @@ export const multitest = (title, testDataArray, fn) => {
     if (!currentCase.startsWith(group)) return;
 
     base(`${title} - ${currentCase}`, async ({ page }) => {
+      console.log("Test 1");
       await fn({ page, testData: row });
+      console.log("Test 2");
+      
     });
   });
 };

@@ -1,5 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import { buildExcelProjects } from "./helpers/dataProjectBuilder.js";
 
 /**
  * Playwright Configuration for SauceDemo Automation Framework
@@ -89,7 +88,6 @@ export default defineConfig({
             name: 'Mobile Safari',
             use: { ...devices['iPhone 12'] },
         },
-        ...buildExcelProjects()
     ],
 
     // Output folder for test artifacts
