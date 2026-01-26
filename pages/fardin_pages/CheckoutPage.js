@@ -99,7 +99,7 @@ export default class CheckoutPage extends BasePage {
      * Enter lastname
      * @param {string} lastName - Username to enter
      */
-    async enterFirstName(lastName) {
+    async enterLastName(lastName) {
         await this.safeFill(this.locators.lastNameInput, lastName);
     }
 
@@ -107,7 +107,7 @@ export default class CheckoutPage extends BasePage {
      * Enter postalcode
      * @param {string} postalCode - Username to enter
      */
-    async enterFirstName(postalCode) {
+    async enterPostalCode(postalCode) {
         await this.safeFill(this.locators.postalCodeInput, postalCode);
     }
 
