@@ -5,6 +5,7 @@ import BasePage from '../../pages/BasePage.js';
 import LoginPage from '../../pages/LoginPage.js';
 import DashboardPage from '../../pages/DashboardPage.js';
 import CartPage from '../../pages/CartPage.js';
+import CheckoutPage from '../../pages/fardin_pages/CheckoutPage.js';
 
 test.describe('Complete Order and Verfiy Workflow', () => {
     test('should complete an order and verify', async ({ page }) => {
@@ -131,15 +132,32 @@ test.describe('Complete Order and Verfiy Workflow', () => {
         // click checkout button
         await cartPage.clickCheckout();
 
+        const checkoutPage = new CheckoutPage(page);
         // Expect : User is redirected to Checkout: Your Information page
+        const isOnCheckoutPage = await checkoutPage.isOnCheckoutPage();
+        expect(isOnCheckoutPage).toBeTruthy();
+
+        // Verify that all the elements of  
+        // the checkout your information page is visible
+        const isCheckoutPageVisible = await checkoutPage.verifyCheckoutPageVisible();
+        expect(isCheckoutPageVisible).toBeTruthy();
 
         // Step 9 : fill checkout information
 
         // enter first name -- dummy data
+        const firstName = 'dummyfirstname';
+        await checkoutPage.enterFirstName(firstName);
+        
         // enter last name -- dummy data
+        const lastName = 'dummylastname' ;
+        await checkoutPage.enterLastName(lastName);
+
         // enter postal code -- dummy data
+        const postalCode = '12345' ;
+        await checkoutPage.enterPostalCode(postalCode);
 
         // click Continue
+        await checkoutPage.clickContinueButton();
 
         // Expect : User is redirected to Checkout: Overview page
 
