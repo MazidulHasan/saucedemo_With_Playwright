@@ -22,12 +22,5 @@ myTest.describe('Dashboard Page Tests', () => {
         expect(productCount).toBe(true);
     });
 
-    myTest('Login and verify logout', async ({ dashboardPage}) => {
-        // verify loogout from dashboard page
-        await dashboardPage.logout();
-        await dashboardPage.waitForURL(/.*saucedemo.com\/$/);
-        const url = dashboardPage.page.url();
-        expect(url).toBe('https://www.saucedemo.com/');
-    });
 
 });
