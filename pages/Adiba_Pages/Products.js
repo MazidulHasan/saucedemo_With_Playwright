@@ -23,4 +23,8 @@ export class Products {
   async removeFromCart(product) {
     await product.getByRole('button', { name: 'Remove' }).click();
   }
+
+  async goToCart(cartIcon) {
+    await cartIcon.click();
+  }
 }

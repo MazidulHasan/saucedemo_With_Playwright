@@ -9,10 +9,6 @@ export class Cart {
     this.checkout = page.locator('[data-test="checkout"]');
   }
 
-  async goToCart(cartIcon) {
-    await cartIcon.click();
-  }
-
   async checkoutProdcut() {
     await this.checkout.click();
   }
