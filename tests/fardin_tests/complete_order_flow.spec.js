@@ -6,6 +6,7 @@ import LoginPage from '../../pages/LoginPage.js';
 import DashboardPage from '../../pages/DashboardPage.js';
 import CartPage from '../../pages/CartPage.js';
 import CheckoutPage from '../../pages/fardin_pages/CheckoutPage.js';
+import CheckoutOverviewPage from '../../pages/fardin_pages/CheckoutOverviewPage.js';
 
 test.describe('Complete Order and Verfiy Workflow', () => {
     test('should complete an order and verify', async ({ page }) => {
@@ -160,6 +161,16 @@ test.describe('Complete Order and Verfiy Workflow', () => {
         await checkoutPage.clickContinueButton();
 
         // Expect : User is redirected to Checkout: Overview page
+        const checkoutOverviewPage = new CheckoutOverviewPage(page);
+
+        const isOnCheckoutOverviewPage = await checkoutOverviewPage.isOnCheckoutOverviewPage();
+        expect(isOnCheckoutOverviewPage).toBeTruthy();
+
+        // Verify that all the elements of  
+        // the checkout your information page is visible
+        const isCheckoutOverviewPageVisible = await checkoutOverviewPage.verifyCheckoutOverviewPageVisible();
+        expect(isCheckoutOverviewPageVisible).toBeTruthy();
+
 
         // Step 10 : verify checkout overview details
 
