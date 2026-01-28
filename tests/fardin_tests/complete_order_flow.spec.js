@@ -1,140 +1,114 @@
 import { test, expect } from '../fixtures/authFixture.js';
 import excelReader from '../../utils/excelReader.js';
 import logger from '../../helpers/logger.js';
-import BasePage from '../../pages/BasePage.js';
+import BasePage from '../../pages/fardin_pages/FardinBasePage.js';
 import LoginPage from '../../pages/LoginPage.js';
-import DashboardPage from '../../pages/DashboardPage.js';
-import CartPage from '../../pages/CartPage.js';
+import DashboardPage from '../../pages/fardin_pages/FardinDashboardPage.js';
+import CartPage from '../../pages/fardin_pages/FardinCartPage.js';
 import CheckoutPage from '../../pages/fardin_pages/CheckoutPage.js';
 import CheckoutOverviewPage from '../../pages/fardin_pages/CheckoutOverviewPage.js';
+import CheckoutCompletePage from '../../pages/fardin_pages/CheckoutCompletePage.js';
 
 test.describe('Complete Order and Verfiy Workflow', () => {
     test('should complete an order and verify', async ({ page }) => {
 
-        const login = new LoginPage(page);
-        // Step 1 : Navigate to the application
-        // const url = 'https://www.saucedemo.com/';
-        // goto the website using the url
-        // await page.goto(url);
-        // goto(url);
-        await login.navigateToLoginPage();
+        const loginPage = new LoginPage(page);
+        // Navigate to the application
+        // goto the website using the url = 'https://www.saucedemo.com/';
+        logger.step(`Navigating to the login page`);
+        await loginPage.navigateToLoginPage();
 
-        // Expect : Login Page is Displayed
-        // const title = 'Swag Labs';
-        // Expect a title "to contain" a string.
-        // await expect(page.getByText(title)).toBeVisible();
-        const isLoginPageDisplayed = await login.isLoginPageDisplayed();
+        // Assert that the Login Page is Displayed
+        const isLoginPageDisplayed = await loginPage.isLoginPageDisplayed();
         expect(isLoginPageDisplayed).toBeTruthy();
 
 
-        // Step 2 : Login to application
-        const username = 'standard_user';
-        const password = 'secret_sauce';
-
-        // Enter a valid user name
-        await login.enterUsername(username);
-        //await page.getByPlaceholder('Username').fill(username);
-
-        // Enter a valid password
-        //await page.getByPlaceholder('Password').fill(password);
-        await login.enterPassword(password);
-
-        // Click the Login button.
-        // await page.getByRole('button', { name: 'Login' }).click();
-        await login.clickLoginButton();
-
-
-        // login.doLogin(username, password);
-
-        // Expect : User redirected to inventory (dashboard) page
-        // Assert that the "Products" title is visible to confirm successful login
-        // await expect(page.locator('span', { hasText: 'Products' })).toBeVisible();
-        const dashboardPage = new DashboardPage(page);
-        const isDashboardVisible = await dashboardPage.verifyDashboardVisible();
-        expect(isDashboardVisible).toBeTruthy();
+        // Read credentials from excel
+        const credentialIndex = 0;        
+        logger.step(`Reading credentials from Excel (index: ${credentialIndex} )`);
+        const credentials = excelReader.getLoginCredentials(credentialIndex);
         
+        logger.info(`Using credentials: ${credentials.username} - ${credentials.description}`);
+        
+        // Login to the application using valid credentials from Excel
+        await loginPage.doLogin(credentials.username, credentials.password);
+
+        const dashboardPage = new DashboardPage(page);
+        
+        // Assert that User is redirected to inventory (dashboard) page
         const isOnDashboard = await dashboardPage.isOnDashboard();
         expect(isOnDashboard).toBeTruthy();
 
+        // Verify that elements of the dashboard is visible
+        const isDashboardVisible = await dashboardPage.verifyDashboardVisible();
+        expect(isDashboardVisible).toBeTruthy();
 
-        // Step 3 : verify product availability on inventory page
-
-        // Verify products are displayed
+        // Verify products are available and being displayed on the inventory page
         const productCount = await dashboardPage.getProductCount();
         expect(productCount).toBeGreaterThan(0);
         
-        // Expect : Product is visible in the product list
-        // dashboard.isProductDisplayed(productName);
-        
+        // Assert that the Product is visible in the product list
         const productName = "Sauce Labs Fleece Jacket";
         const isProductDisplayed = await dashboardPage.isProductDisplayed(productName);
         expect(isProductDisplayed).toBeTruthy();
 
-
-        // locate the product
-        // -->> for this task item "Sauce Labs Fleece Jacket" 
-        //const itemName = 'Sauce Labs Backpack';
-        // const item = page.locator('.inventory_item_description').filter({
-        //     has: page.locator('.inventory_item_name', { hasText: itemName })
-        // });
-
         const previousCartBadgeCount =  await dashboardPage.getCartBadgeCount();
-        // step 4 : add product to cart
-        // await item.getByRole('button', { name: 'Add to cart' }).click();
+        // Add the product to cart
         await dashboardPage.addProductToCartByName(productName);
 
-        // Expect : Button changes to remove
+        const inventoryProductDetails = await dashboardPage.getProductDetails(productName);
 
-        // Expect : product is added to the cart
-        
-        // Step 5 : verify cart badge increment
+
+        // Assert that Add to cart Button changes to Remove button
+        const isRemoveButtonVisible = await dashboardPage.verifyRemoveButtonVisible();
+        expect(isRemoveButtonVisible).toBeTruthy();
+
+        // Verify cart badge count is increase to 1
         const isBadgeCountExpected = await dashboardPage.verifyCartBadgeCount(previousCartBadgeCount + 1);
-        // expect : cart badge count increase to 1
-        // await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
         expect(isBadgeCountExpected).toBeTruthy();
 
-
-        // const cartItem = page.locator('.cart_item').filter({
-        //     has: page.locator('.inventory_item_name', { hasText: itemName })
-        // });
-
-        // Step 6 : Navigate to cart page 
-        // click on the cart icon
+        // click on the cart icon to  Navigate to the cart page
         await dashboardPage.clickCartIcon();
 
-        // expect : user is redirected to cart page
         const cartPage = new CartPage(page);
+
+        // assert that user is redirected to cart page
         const isOnCartPage = await cartPage.isOnCartPage();
         expect(isOnCartPage).toBeTruthy();
 
-        // Step 7 : verify product details on cart page
+        // Verify that cart page is visible
         const isCartPageVisible = await cartPage.verifyCartPageVisible();
         expect(isCartPageVisible).toBeTruthy();
-
+        
+        // Verify that cart is not empty
         const isCartNotEmpty = await cartPage.getCartItemCount();
         expect(isCartNotEmpty).toBeTruthy();
         
+        // Verify that product is in the cart
         const isProductInCart = await cartPage.isProductInCart(productName);
         expect(isProductInCart).toBeTruthy();
+        
+        // Verify the product details on cart page
+        const cartProductDetails = await cartPage.getProductDetails(productName);
+        
+        // verify the cart product name matches with the inventory product name
+        expect(cartProductDetails.name).toBe(inventoryProductDetails.name);
+        console.log(cartProductDetails.name);
 
-        // verify product name : Sauce Labs Fleece Jacket
-        // verify quantity 1
-        // ** verify product price matches inventory page
+        // verify the cart product price matches with the inventory product price
+        expect(cartProductDetails.price).toBe(inventoryProductDetails.price);
+        console.log(cartProductDetails.price);
 
-        const productDetails = await cartPage.getProductDetails(productName);
-        console.log(productDetails.name);
-        console.log(productDetails.price);
-        console.log(productDetails.quantity);
+        // verify the cart product quantity is 1
+        expect(cartProductDetails.quantity).toBe('1');
 
-
-        // Expect : correct product details are displayed
-
-        // Step 8 : Proceed to checkout
-        // click checkout button
+        
+        // click checkout button to Proceed to the checkout your information page
         await cartPage.clickCheckout();
 
         const checkoutPage = new CheckoutPage(page);
-        // Expect : User is redirected to Checkout: Your Information page
+
+        // Assert that User is redirected to Checkout: Your Information page
         const isOnCheckoutPage = await checkoutPage.isOnCheckoutPage();
         expect(isOnCheckoutPage).toBeTruthy();
 
@@ -143,26 +117,16 @@ test.describe('Complete Order and Verfiy Workflow', () => {
         const isCheckoutPageVisible = await checkoutPage.verifyCheckoutPageVisible();
         expect(isCheckoutPageVisible).toBeTruthy();
 
-        // Step 9 : fill checkout information
-
-        // enter first name -- dummy data
+        // fill the checkout information with first name, last name, postal code
         const firstName = 'dummyfirstname';
-        await checkoutPage.enterFirstName(firstName);
-        
-        // enter last name -- dummy data
         const lastName = 'dummylastname' ;
-        await checkoutPage.enterLastName(lastName);
-
-        // enter postal code -- dummy data
         const postalCode = '12345' ;
-        await checkoutPage.enterPostalCode(postalCode);
+        
+        await checkoutPage.fillCheckoutInformation(firstName, lastName, postalCode);
 
-        // click Continue
-        await checkoutPage.clickContinueButton();
-
-        // Expect : User is redirected to Checkout: Overview page
         const checkoutOverviewPage = new CheckoutOverviewPage(page);
-
+        
+        // Verify that User is redirected to Checkout: Overview page
         const isOnCheckoutOverviewPage = await checkoutOverviewPage.isOnCheckoutOverviewPage();
         expect(isOnCheckoutOverviewPage).toBeTruthy();
 
@@ -172,36 +136,62 @@ test.describe('Complete Order and Verfiy Workflow', () => {
         expect(isCheckoutOverviewPageVisible).toBeTruthy();
 
 
-        // Step 10 : verify checkout overview details
+        // Verify the checkout overview details
+        const checkoutProductDetails = await checkoutOverviewPage.getCheckoutProductDetails(productName);
 
-        // verify product name
-        // verify quantity and price
-        // verify item total is correct
+        // verify the checkout product name matches with the cart product name
+        expect(checkoutProductDetails.name).toBe(cartProductDetails.name);
+        console.log(checkoutProductDetails.name);
 
-        // Expect all checkout details are correct
+        // verify the checkout product price matches with the cart product price
+        expect(checkoutProductDetails.price).toBe(cartProductDetails.price);
+        console.log(checkoutProductDetails.price);
 
-        // Step 11 : complete the order
+        // verify the checkout product name quantity with the cart product quantity
+        expect(checkoutProductDetails.quantity).toBe(cartProductDetails.quantity);
+        console.log(checkoutProductDetails.quantity);
+
+
+        // Assert that all checkout details are correct
+        expect(checkoutProductDetails).toEqual(cartProductDetails);
+
+        // complete the order
         // click finish button
+        await checkoutOverviewPage.clickFinishButton();
 
-        // Expect : User is redirected to Checkout Complete page
+        // assert that the User is redirected to Checkout Complete page
+        const checkoutCompletePage = new CheckoutCompletePage(page);
 
-        // Step 12 : verify order completion page
+        const isOnCheckoutCompletePage = await checkoutCompletePage.isOnCheckoutCompletePage();
+        expect(isOnCheckoutCompletePage).toBeTruthy();
+
+        // Verify that all the elements of  
+        // the checkout complete page is visible
+        const isCheckoutCompletePageVisible = await checkoutCompletePage.verifyCheckoutCompletePageVisible();
+        expect(isCheckoutCompletePageVisible).toBeTruthy();
+
+
+        // Verify the user is on the order completion page
 
         // verify confirmation message (e.g., “Thank you for your order!”)
+        const isCompleteMessageVisible = await checkoutCompletePage.verifyCompleteMessageVisible();
+        expect(isCompleteMessageVisible).toBeTruthy();
+        
 
         // verify order confirmation icon/image is displayed
+        const isConfirmationImageVisible = await checkoutCompletePage.verifyConfirmationImageVisible();
+        expect(isConfirmationImageVisible).toBeTruthy();
 
-        // Expect : Order is successfully completed
-
-        // Step 13 : Navigate back to dashboard
+        // Navigate back to dashboard
 
         // click Back to Home button
+        await checkoutCompletePage.clickBackHomeButton();
 
-        // Expect : User is redirected to inventory (Dashboard) page
+        // assert that the User is redirected to inventory (Dashboard) page
+        expect(isOnDashboard).toBeTruthy();
 
-        // Post conditions
-        // Cart is cleared
-        // user is on inventory page
+        const isCartEmpty = await cartPage.isCartEmpty();
+        expect(isCartEmpty).toBeTruthy();
     });
 
 
