@@ -1,4 +1,4 @@
-import BasePage from '../BasePage.js';
+import BasePage from './FardinBasePage.js';
 
 /**
  * CheckoutPage - Page Object for SauceDemo Shopping Checkout Page
@@ -20,7 +20,8 @@ export default class CheckoutPage extends BasePage {
             postalCodeInput : '#postal-code',
             cancelButton : '#cancel',
             continueButton : '#continue',
-            checkoutContainerInfo : '.checkout_info_container'
+            checkoutContainerInfo : '.checkout_info_container',
+            errorMessage: '[data-test="error"]'
         };
     }
 
@@ -30,16 +31,10 @@ export default class CheckoutPage extends BasePage {
      * @returns {Promise<boolean>} True if on cart page
      */
     async isOnCheckoutPage() {
-        const url = this.getCurrentURL();
-        const onCheckoutPage = url.includes('checkout-step-one.html');
+        const expectedUrl = 'checkout-step-one.html' ;
+        const pageName = 'Checkout' ;
 
-        if (onCheckoutPage) {
-            this.logger.pass('User is on checkout page');
-        } else {
-            this.logger.warn('User is NOT on checkout page');
-        }
-
-        return onCheckoutPage;
+        return await this.isOnPage(expectedUrl, pageName);
     }
 
     /**
@@ -47,29 +42,13 @@ export default class CheckoutPage extends BasePage {
      * @returns {Promise<boolean>} True if cart page is visible
      */
     async verifyCheckoutPageVisible() {
-        try {
-            this.logger.step('Verifying checkout page is visible');
+        this.logger.step(`Verifying checkout page is visible`);
 
-            // Wait for checkout list to be visible
-            await this.waitForElement(this.locators.checkoutContainerInfo, 10000);
-
-            // Check if title is visible
-            const titleVisible = await this.isVisible(this.locators.pageTitle);
-            const checkoutContainerInfoVisible = await this.isVisible(this.locators.checkoutContainerInfo);
-
-            if (titleVisible && checkoutContainerInfoVisible) {
-                this.logger.pass('Checkout page is visible and loaded');
-                return true;
-            } else {
-                this.logger.fail('Checkout page elements not visible');
-                return false;
-            }
-
-        } catch (error) {
-            this.logger.fail(`Failed to verify checkout page: ${error.message}`);
-            await this.takeScreenshot(`checkout-page-verification-error-${Date.now()}`);
-            throw error;
-        }
+        return await this.isPageVisible(
+            this.locators.pageTitle,                  
+            this.locators.checkoutContainerInfo,  
+            'Checkout'
+        );
     }
 
     /**
@@ -139,9 +118,42 @@ export default class CheckoutPage extends BasePage {
             throw error;
         }
     }
-    // TODO : Should a clear info method be implemented?
-    // TODO : FIllCHECKOUTINFO method could be implemented for a more robust implementation
-    //        AND IF NEEDED ACCORDING TO TASK
+
+    /**
+     * Perform fill the checkout information action
+     * @param {string} firstname - First Name
+     * @param {string} lastname - Last Name
+     * @param {string} postalcode - Postal Code
+     */
+    async fillCheckoutInformation(firstname, lastname, postalcode) {
+        this.logger.step(`Filling the checkout information`);
+
+        try {
+            await this.enterFirstName(firstname);
+            await this.enterLastName(lastname);
+            await this.enterPostalCode(postalcode);
+            await this.clickContinueButton();
+
+            // Wait a moment for navigation or error message
+            await this.page.waitForTimeout(1000);
+
+            // Check if filling information action was successful (no error message)
+            const errorVisible = await this.isVisible(this.locators.errorMessage);
+
+            if (errorVisible) {
+                const errorText = await this.getTextContent(this.locators.errorMessage);
+                this.logger.fail(`Filling Checkout Information failed with error: ${errorText}`);
+                throw new Error(`Filling Checkout Info failed: ${errorText}`);
+            } else {
+                this.logger.pass(`Checkout filling action successful for user: ${firstname} ${lastname}`);
+            }
+
+        } catch (error) {
+            this.logger.fail(`Checkout information filling process failed: ${error.message}`);
+            await this.takeScreenshot(`filling-checkout-info-failure-${firstname}-${lastname}-${Date.now()}`);
+            throw error;
+        }
+    }
 
 
 }
