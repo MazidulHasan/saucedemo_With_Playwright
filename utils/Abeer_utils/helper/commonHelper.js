@@ -1,5 +1,5 @@
 export class CommonHelper{
-    remove$(itemPrice){
+    removeDollar(itemPrice){
         itemPrice = itemPrice.split('$');
         return Number(itemPrice[1]);
     }
@@ -7,7 +7,7 @@ export class CommonHelper{
     sumPrice(itemsPrice){
         let sum = 0;
         for(const itemPrice of itemsPrice){
-            sum += this.remove$(itemPrice);
+            sum += this.removeDollar(itemPrice);
         }
         return '$' + sum.toString();
     }
